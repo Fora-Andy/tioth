@@ -1859,6 +1859,7 @@ enum
     ENDTURN_WONDER_ROOM,
     ENDTURN_MAGIC_ROOM,
     ENDTURN_ELECTRIC_TERRAIN,
+    ENDTURN_NORMAL_TERRAIN, //TIOTH 一般场地
     ENDTURN_MISTY_TERRAIN,
     ENDTURN_GRASSY_TERRAIN,
     ENDTURN_PSYCHIC_TERRAIN,
@@ -2218,6 +2219,17 @@ u8 DoFieldEndTurnEffects(void)
             {
                 gFieldStatuses &= ~(STATUS_FIELD_ELECTRIC_TERRAIN | STATUS_FIELD_TERRAIN_PERMANENT);
                 BattleScriptExecute(BattleScript_ElectricTerrainEnds);
+                effect++;
+            }
+            gBattleStruct->turnCountersTracker++;
+            break;
+        //TIOTH 一般场地
+        case ENDTURN_NORMAL_TERRAIN:
+            if (gFieldStatuses & STATUS_FIELD_NORMAL_TERRAIN
+              && ((!gFieldStatuses & STATUS_FIELD_TERRAIN_PERMANENT) && --gFieldTimers.normalTerrainTimer == 0))
+            {
+                gFieldStatuses &= ~(STATUS_FIELD_NORMAL_TERRAIN);
+                BattleScriptExecute(BattleScript_NormalTerrainEnds);
                 effect++;
             }
             gBattleStruct->turnCountersTracker++;
@@ -3674,7 +3686,7 @@ static bool32 TryChangeBattleTerrain(u32 battler, u32 statusFlag, u8 *timer)
 {
     if (!(gFieldStatuses & statusFlag))
     {
-        gFieldStatuses &= ~(STATUS_FIELD_MISTY_TERRAIN | STATUS_FIELD_GRASSY_TERRAIN | EFFECT_ELECTRIC_TERRAIN | EFFECT_PSYCHIC_TERRAIN);
+        gFieldStatuses &= ~(STATUS_FIELD_MISTY_TERRAIN | STATUS_FIELD_GRASSY_TERRAIN | EFFECT_ELECTRIC_TERRAIN | EFFECT_PSYCHIC_TERRAIN | EFFECT_NORMAL_TERRAIN);//TIOTH新增一般场地
         gFieldStatuses |= statusFlag;
 
         if (GetBattlerHoldEffect(battler, TRUE) == HOLD_EFFECT_TERRAIN_EXTENDER)
@@ -3841,6 +3853,10 @@ u8 AbilityBattleEffects(u8 caseID, u8 battler, u16 ability, u8 special, u16 move
                     break;
                 case STATUS_FIELD_PSYCHIC_TERRAIN:
                     gBattleCommunication[MULTISTRING_CHOOSER] = 3;
+                    break;
+                //TIOTH 一般场地
+                case STATUS_FIELD_NORMAL_TERRAIN:
+                    gBattleCommunication[MULTISTRING_CHOOSER] = 4;
                     break;
                 }
 
@@ -4090,6 +4106,141 @@ u8 AbilityBattleEffects(u8 caseID, u8 battler, u16 ability, u8 special, u16 move
                 effect++;
             }
             break;
+        case ABILITY_WATER_AURA:
+            if (!gSpecialStatuses[battler].switchInAbilityDone)
+            {
+                gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_SWITCHIN_WATERAURA;
+                gSpecialStatuses[battler].switchInAbilityDone = 1;
+                BattleScriptPushCursorAndCallback(BattleScript_SwitchInAbilityMsg);
+                effect++;
+            }
+            break;
+        case ABILITY_STEEL_AURA:
+            if (!gSpecialStatuses[battler].switchInAbilityDone)
+            {
+                gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_SWITCHIN_STEELAURA;
+                gSpecialStatuses[battler].switchInAbilityDone = 1;
+                BattleScriptPushCursorAndCallback(BattleScript_SwitchInAbilityMsg);
+                effect++;
+            }
+            break;
+        case ABILITY_FIRE_AURA:
+            if (!gSpecialStatuses[battler].switchInAbilityDone)
+            {
+                gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_SWITCHIN_FIREAURA;
+                gSpecialStatuses[battler].switchInAbilityDone = 1;
+                BattleScriptPushCursorAndCallback(BattleScript_SwitchInAbilityMsg);
+                effect++;
+            }
+            break;
+        case ABILITY_GRASS_AURA:
+            if (!gSpecialStatuses[battler].switchInAbilityDone)
+            {
+                gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_SWITCHIN_GRASSAURA;
+                gSpecialStatuses[battler].switchInAbilityDone = 1;
+                BattleScriptPushCursorAndCallback(BattleScript_SwitchInAbilityMsg);
+                effect++;
+            }
+            break;
+        case ABILITY_ELECTRIC_AURA:
+            if (!gSpecialStatuses[battler].switchInAbilityDone)
+            {
+                gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_SWITCHIN_ELECTRICAURA;
+                gSpecialStatuses[battler].switchInAbilityDone = 1;
+                BattleScriptPushCursorAndCallback(BattleScript_SwitchInAbilityMsg);
+                effect++;
+            }
+            break;
+        case ABILITY_GHOST_AURA:
+            if (!gSpecialStatuses[battler].switchInAbilityDone)
+            {
+                gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_SWITCHIN_GHOSTAURA;
+                gSpecialStatuses[battler].switchInAbilityDone = 1;
+                BattleScriptPushCursorAndCallback(BattleScript_SwitchInAbilityMsg);
+                effect++;
+            }
+            break;
+        case ABILITY_POISON_AURA:
+            if (!gSpecialStatuses[battler].switchInAbilityDone)
+            {
+                gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_SWITCHIN_POISONAURA;
+                gSpecialStatuses[battler].switchInAbilityDone = 1;
+                BattleScriptPushCursorAndCallback(BattleScript_SwitchInAbilityMsg);
+                effect++;
+            }
+            break;
+        case ABILITY_GROUND_AURA:
+            if (!gSpecialStatuses[battler].switchInAbilityDone)
+            {
+                gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_SWITCHIN_GROUNDAURA;
+                gSpecialStatuses[battler].switchInAbilityDone = 1;
+                BattleScriptPushCursorAndCallback(BattleScript_SwitchInAbilityMsg);
+                effect++;
+            }
+            break;
+        case ABILITY_ROCK_AURA:
+            if (!gSpecialStatuses[battler].switchInAbilityDone)
+            {
+                gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_SWITCHIN_ROCKAURA;
+                gSpecialStatuses[battler].switchInAbilityDone = 1;
+                BattleScriptPushCursorAndCallback(BattleScript_SwitchInAbilityMsg);
+                effect++;
+            }
+            break;
+        case ABILITY_FLYING_AURA:
+            if (!gSpecialStatuses[battler].switchInAbilityDone)
+            {
+                gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_SWITCHIN_FLYINGAURA;
+                gSpecialStatuses[battler].switchInAbilityDone = 1;
+                BattleScriptPushCursorAndCallback(BattleScript_SwitchInAbilityMsg);
+                effect++;
+            }
+            break;
+        case ABILITY_PSYCHIC_AURA:
+            if (!gSpecialStatuses[battler].switchInAbilityDone)
+            {
+                gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_SWITCHIN_PSYCHICAURA;
+                gSpecialStatuses[battler].switchInAbilityDone = 1;
+                BattleScriptPushCursorAndCallback(BattleScript_SwitchInAbilityMsg);
+                effect++;
+            }
+            break;
+        case ABILITY_BUG_AURA:
+            if (!gSpecialStatuses[battler].switchInAbilityDone)
+            {
+                gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_SWITCHIN_BUGAURA;
+                gSpecialStatuses[battler].switchInAbilityDone = 1;
+                BattleScriptPushCursorAndCallback(BattleScript_SwitchInAbilityMsg);
+                effect++;
+            }
+            break;
+        case ABILITY_DRAGON_AURA:
+            if (!gSpecialStatuses[battler].switchInAbilityDone)
+            {
+                gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_SWITCHIN_DRAGONAURA;
+                gSpecialStatuses[battler].switchInAbilityDone = 1;
+                BattleScriptPushCursorAndCallback(BattleScript_SwitchInAbilityMsg);
+                effect++;
+            }
+            break;
+        case ABILITY_ICE_AURA:
+            if (!gSpecialStatuses[battler].switchInAbilityDone)
+            {
+                gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_SWITCHIN_ICEAURA;
+                gSpecialStatuses[battler].switchInAbilityDone = 1;
+                BattleScriptPushCursorAndCallback(BattleScript_SwitchInAbilityMsg);
+                effect++;
+            }
+            break;
+        case ABILITY_FIGHTING_AURA:
+            if (!gSpecialStatuses[battler].switchInAbilityDone)
+            {
+                gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_SWITCHIN_FIGHTINGAURA;
+                gSpecialStatuses[battler].switchInAbilityDone = 1;
+                BattleScriptPushCursorAndCallback(BattleScript_SwitchInAbilityMsg);
+                effect++;
+            }
+            break;
         case ABILITY_AURA_BREAK:
             if (!gSpecialStatuses[battler].switchInAbilityDone)
             {
@@ -4149,6 +4300,14 @@ u8 AbilityBattleEffects(u8 caseID, u8 battler, u16 ability, u8 special, u16 move
             if (TryChangeBattleTerrain(battler, STATUS_FIELD_ELECTRIC_TERRAIN, &gFieldTimers.electricTerrainTimer))
             {
                 BattleScriptPushCursorAndCallback(BattleScript_ElectricSurgeActivates);
+                effect++;
+            }
+            break;
+        //TIOTH 一般场地特性
+        case ABILITY_NORMAL_SURGE:
+            if (TryChangeBattleTerrain(battler, STATUS_FIELD_NORMAL_TERRAIN, &gFieldTimers.normalTerrainTimer))
+            {
+                BattleScriptPushCursorAndCallback(BattleScript_NormalSurgeActivates);
                 effect++;
             }
             break;
@@ -4293,6 +4452,9 @@ u8 AbilityBattleEffects(u8 caseID, u8 battler, u16 ability, u8 special, u16 move
                         StringCopy(gBattleTextBuff1, gStatusConditionString_BurnJpn);
                     if (gBattleMons[battler].status1 & STATUS1_FREEZE)
                         StringCopy(gBattleTextBuff1, gStatusConditionString_IceJpn);
+                    if (gBattleMons[battler].status1 & STATUS1_FRAGILE)//TIOTH虫异常
+                        StringCopy(gBattleTextBuff1, gStatusConditionString_FragileJpn);
+
 
                     gBattleMons[battler].status1 = 0;
                     gBattleMons[battler].status2 &= ~(STATUS2_NIGHTMARE);
@@ -4874,6 +5036,25 @@ u8 AbilityBattleEffects(u8 caseID, u8 battler, u16 ability, u8 special, u16 move
                 effect++;
             }
             break;
+        case ABILITY_WORM_BODY: //TIOTH虫异常虫蛊之躯
+            if (!(gMoveResultFlags & MOVE_RESULT_NO_EFFECT)
+             && gBattleMons[gBattlerAttacker].hp != 0
+             && !gProtectStructs[gBattlerAttacker].confusionSelfDmg
+             && (gBattleMoves[move].flags & FLAG_MAKES_CONTACT)
+             && TARGET_TURN_DAMAGED
+             && !IS_BATTLER_OF_TYPE(gBattlerAttacker, TYPE_BUG)
+             && GetBattlerAbility(gBattlerAttacker) != ABILITY_SHELL_ARMOR
+             && !(gBattleMons[gBattlerAttacker].status1 & STATUS1_ANY)
+             && !IsAbilityStatusProtected(gBattlerAttacker)
+             && (Random() % 3) == 0)
+            {
+                gBattleScripting.moveEffect = MOVE_EFFECT_AFFECTS_USER | MOVE_EFFECT_FRAGILE;
+                BattleScriptPushCursor();
+                gBattlescriptCurrInstr = BattleScript_AbilityStatusEffect;
+                gHitMarker |= HITMARKER_IGNORE_SAFEGUARD;
+                effect++;
+            }
+            break;
         case ABILITY_CUTE_CHARM:
             if (!(gMoveResultFlags & MOVE_RESULT_NO_EFFECT)
              && gBattleMons[gBattlerAttacker].hp != 0
@@ -4988,6 +5169,26 @@ u8 AbilityBattleEffects(u8 caseID, u8 battler, u16 ability, u8 special, u16 move
                 effect++;
             }
             break;
+        //TIOTH新增虫异常相关特性丝之歌
+        case ABILITY_FRAGILE_TOUCH:
+            if (!(gMoveResultFlags & MOVE_RESULT_NO_EFFECT)
+             && gBattleMons[gBattlerTarget].hp != 0
+             && !gProtectStructs[gBattlerTarget].confusionSelfDmg
+             && !IS_BATTLER_OF_TYPE(gBattlerTarget, TYPE_BUG)
+             && GetBattlerAbility(gBattlerTarget) != ABILITY_SHELL_ARMOR
+             && !(gBattleMons[gBattlerTarget].status1 & STATUS1_ANY)
+             && !IsAbilityStatusProtected(gBattlerTarget)
+             && IsMoveMakingContact(move, gBattlerAttacker)
+             && (Random() % 3) == 0)
+            {
+                gBattleScripting.moveEffect = MOVE_EFFECT_FRAGILE;
+                PREPARE_ABILITY_BUFFER(gBattleTextBuff1, gLastUsedAbility);
+                BattleScriptPushCursor();
+                gBattlescriptCurrInstr = BattleScript_AbilityStatusEffect;
+                gHitMarker |= HITMARKER_IGNORE_SAFEGUARD;
+                effect++;
+            }
+            break;
         case ABILITY_STENCH:
             if (!(gMoveResultFlags & MOVE_RESULT_NO_EFFECT)
              && gBattleMons[gBattlerTarget].hp != 0
@@ -5080,6 +5281,13 @@ u8 AbilityBattleEffects(u8 caseID, u8 battler, u16 ability, u8 special, u16 move
                 if (gBattleMons[battler].status1 & STATUS1_FREEZE)
                 {
                     StringCopy(gBattleTextBuff1, gStatusConditionString_IceJpn);
+                    effect = 1;
+                }
+                break;
+            case ABILITY_SHELL_ARMOR:
+                if (gBattleMons[battler].status1 & STATUS1_FRAGILE)//TIOTH虫异常
+                {
+                    StringCopy(gBattleTextBuff1, gStatusConditionString_FragileJpn);
                     effect = 1;
                 }
                 break;
@@ -5730,6 +5938,14 @@ u8 ItemBattleEffects(u8 caseID, u8 battlerId, bool8 moveTurn)
                     effect = ITEM_STATUS_CHANGE;
                 }
                 break;
+            case HOLD_EFFECT_CURE_FRG: //TIOTH虫异常
+                if (B_BERRIES_INSTANT >= GEN_4 && gBattleMons[battlerId].status1 & STATUS1_FRAGILE && !UnnerveOn(battlerId, gLastUsedItem))
+                {
+                    gBattleMons[battlerId].status1 &= ~(STATUS1_FRAGILE);
+                    BattleScriptExecute(BattleScript_BerryCureFrzEnd2);
+                    effect = ITEM_STATUS_CHANGE;
+                }
+                break;
             case HOLD_EFFECT_CURE_SLP:
                 if (B_BERRIES_INSTANT >= GEN_4 && gBattleMons[battlerId].status1 & STATUS1_SLEEP && !UnnerveOn(battlerId, gLastUsedItem))
                 {
@@ -5767,6 +5983,11 @@ u8 ItemBattleEffects(u8 caseID, u8 battlerId, bool8 moveTurn)
                     if (gBattleMons[battlerId].status1 & STATUS1_FREEZE)
                     {
                         StringCopy(gBattleTextBuff1, gStatusConditionString_IceJpn);
+                        i++;
+                    }
+                    if (gBattleMons[battlerId].status1 & STATUS1_FRAGILE)//TIOTH虫异常
+                    {
+                        StringCopy(gBattleTextBuff1, gStatusConditionString_FragileJpn);
                         i++;
                     }
                     if (gBattleMons[battlerId].status2 & STATUS2_CONFUSION)
@@ -6000,6 +6221,14 @@ u8 ItemBattleEffects(u8 caseID, u8 battlerId, bool8 moveTurn)
                     effect = ITEM_STATUS_CHANGE;
                 }
                 break;
+            case HOLD_EFFECT_CURE_FRG: //TIOTH虫异常
+                if (gBattleMons[battlerId].status1 & STATUS1_FRAGILE && !UnnerveOn(battlerId, gLastUsedItem))
+                {
+                    gBattleMons[battlerId].status1 &= ~(STATUS1_FRAGILE);
+                    BattleScriptExecute(BattleScript_BerryCureFrzEnd2);
+                    effect = ITEM_STATUS_CHANGE;
+                }
+                break;
             case HOLD_EFFECT_CURE_SLP:
                 if (gBattleMons[battlerId].status1 & STATUS1_SLEEP && !UnnerveOn(battlerId, gLastUsedItem))
                 {
@@ -6045,6 +6274,11 @@ u8 ItemBattleEffects(u8 caseID, u8 battlerId, bool8 moveTurn)
                     if (gBattleMons[battlerId].status1 & STATUS1_FREEZE)
                     {
                         StringCopy(gBattleTextBuff1, gStatusConditionString_IceJpn);
+                        i++;
+                    }
+                    if (gBattleMons[battlerId].status1 & STATUS1_FRAGILE)//TIOTH虫异常
+                    {
+                        StringCopy(gBattleTextBuff1, gStatusConditionString_FragileJpn);
                         i++;
                     }
                     if (gBattleMons[battlerId].status2 & STATUS2_CONFUSION)
@@ -6194,6 +6428,15 @@ u8 ItemBattleEffects(u8 caseID, u8 battlerId, bool8 moveTurn)
                     effect = ITEM_STATUS_CHANGE;
                 }
                 break;
+            case HOLD_EFFECT_CURE_FRG: //TIOTH虫异常
+                if (gBattleMons[battlerId].status1 & STATUS1_FRAGILE && !UnnerveOn(battlerId, gLastUsedItem))
+                {
+                    gBattleMons[battlerId].status1 &= ~(STATUS1_FRAGILE);
+                    BattleScriptPushCursor();
+                    gBattlescriptCurrInstr = BattleScript_BerryCureFrzRet;
+                    effect = ITEM_STATUS_CHANGE;
+                }
+                break;
             case HOLD_EFFECT_CURE_SLP:
                 if (gBattleMons[battlerId].status1 & STATUS1_SLEEP && !UnnerveOn(battlerId, gLastUsedItem))
                 {
@@ -6247,6 +6490,10 @@ u8 ItemBattleEffects(u8 caseID, u8 battlerId, bool8 moveTurn)
                     if (gBattleMons[battlerId].status1 & STATUS1_FREEZE)
                     {
                         StringCopy(gBattleTextBuff1, gStatusConditionString_IceJpn);
+                    }
+                    if (gBattleMons[battlerId].status1 & STATUS1_FRAGILE)//TIOTH虫异常
+                    {
+                        StringCopy(gBattleTextBuff1, gStatusConditionString_FragileJpn);
                     }
                     if (gBattleMons[battlerId].status2 & STATUS2_CONFUSION)
                     {
@@ -6496,6 +6743,19 @@ u8 ItemBattleEffects(u8 caseID, u8 battlerId, bool8 moveTurn)
                 RecordItemEffectBattle(battlerId, battlerHoldEffect);
             }
             break;
+        //case HOLD_EFFECT_FRAGILE_ORB:
+        //    if (!gBattleMons[battlerId].status1
+        //        && !IS_BATTLER_OF_TYPE(battlerId, TYPE_BUG)
+        //        && GetBattlerAbility(battlerId) != ABILITY_SHELL_ARMOR
+        //        && GetBattlerAbility(battlerId) != ABILITY_COMATOSE
+        //        && IsBattlerAlive)
+        //    {
+        //        effect = ITEM_STATUS_CHANGE;
+        //        gBattleMons[battlerId].status1 = STATUS1_FRAGILE;
+        //        BattleScriptExecute(BattleScript_FragileOrb);
+        //        RecordItemEffectBattle(battlerId, battlerHoldEffect);
+        //    }
+        //    break;
         }
 
         if (effect == ITEM_STATUS_CHANGE)
@@ -7229,6 +7489,10 @@ static u32 CalcMoveBasePowerAfterModifiers(u16 move, u8 battlerAtk, u8 battlerDe
         if (gBattleMoves[move].flags & FLAG_IRON_FIST_BOOST)
            MulModifier(&modifier, UQ_4_12(1.2));
         break;
+    case ABILITY_RIDER_KICK:
+        if (gBattleMoves[move].flags & FLAG_RIDER_KICK_BOOST)
+           MulModifier(&modifier, UQ_4_12(1.2));
+        break;
     case ABILITY_SHEER_FORCE:
         if (gBattleMoves[move].flags & FLAG_SHEER_FORCE_BOOST)
            MulModifier(&modifier, UQ_4_12(1.3));
@@ -7273,6 +7537,10 @@ static u32 CalcMoveBasePowerAfterModifiers(u16 move, u8 battlerAtk, u8 battlerDe
         if (moveType == TYPE_STEEL)
            MulModifier(&modifier, UQ_4_12(1.5));
         break;
+    case ABILITY_GRASSWORKER:
+        if (moveType == TYPE_GRASS)
+           MulModifier(&modifier, UQ_4_12(1.5));
+        break;
     case ABILITY_PIXILATE:
         if (moveType == TYPE_FAIRY && gBattleStruct->ateBoost[battlerAtk])
             MulModifier(&modifier, UQ_4_12(1.2));
@@ -7291,6 +7559,10 @@ static u32 CalcMoveBasePowerAfterModifiers(u16 move, u8 battlerAtk, u8 battlerDe
         break;
     case ABILITY_NORMALIZE:
         if (moveType == TYPE_NORMAL && gBattleStruct->ateBoost[battlerAtk])
+            MulModifier(&modifier, UQ_4_12(1.2));
+        break;
+    case ABILITY_FIRE_SKIN:
+        if (moveType == TYPE_FIRE && gBattleStruct->ateBoost[battlerAtk])
             MulModifier(&modifier, UQ_4_12(1.2));
         break;
     case ABILITY_PUNK_ROCK:
@@ -7313,12 +7585,27 @@ static u32 CalcMoveBasePowerAfterModifiers(u16 move, u8 battlerAtk, u8 battlerDe
 
     // field abilities
     if ((IsAbilityOnField(ABILITY_DARK_AURA) && moveType == TYPE_DARK)
-        || (IsAbilityOnField(ABILITY_FAIRY_AURA) && moveType == TYPE_FAIRY))
+        || (IsAbilityOnField(ABILITY_FAIRY_AURA) && moveType == TYPE_FAIRY) 
+        || (IsAbilityOnField(ABILITY_WATER_AURA) && moveType == TYPE_WATER)
+        || (IsAbilityOnField(ABILITY_STEEL_AURA) && moveType == TYPE_STEEL)
+        || (IsAbilityOnField(ABILITY_FIRE_AURA) && moveType == TYPE_FIRE)
+        || (IsAbilityOnField(ABILITY_GRASS_AURA) && moveType == TYPE_GRASS)
+        || (IsAbilityOnField(ABILITY_ELECTRIC_AURA) && moveType == TYPE_ELECTRIC)
+        || (IsAbilityOnField(ABILITY_GHOST_AURA) && moveType == TYPE_GHOST)
+        || (IsAbilityOnField(ABILITY_POISON_AURA) && moveType == TYPE_POISON)
+        || (IsAbilityOnField(ABILITY_GROUND_AURA) && moveType == TYPE_GROUND)
+        || (IsAbilityOnField(ABILITY_ROCK_AURA) && moveType == TYPE_ROCK)
+        || (IsAbilityOnField(ABILITY_FLYING_AURA) && moveType == TYPE_FLYING)
+        || (IsAbilityOnField(ABILITY_PSYCHIC_AURA) && moveType == TYPE_PSYCHIC)
+        || (IsAbilityOnField(ABILITY_BUG_AURA) && moveType == TYPE_BUG)
+        || (IsAbilityOnField(ABILITY_DRAGON_AURA) && moveType == TYPE_DRAGON)
+        || (IsAbilityOnField(ABILITY_ICE_AURA) && moveType == TYPE_ICE)
+        || (IsAbilityOnField(ABILITY_FIGHTING_AURA) && moveType == TYPE_FIGHTING))
     {
         if (IsAbilityOnField(ABILITY_AURA_BREAK))
             MulModifier(&modifier, UQ_4_12(0.75));
         else
-            MulModifier(&modifier, UQ_4_12(1.25));
+            MulModifier(&modifier, UQ_4_12(1.33));
     }
 
     // attacker partner's abilities
@@ -7441,11 +7728,11 @@ static u32 CalcMoveBasePowerAfterModifiers(u16 move, u8 battlerAtk, u8 battlerDe
         break;
     }
 
-    // move effect
+    // move damage effect
     switch (gBattleMoves[move].effect)
     {
     case EFFECT_FACADE:
-        if (gBattleMons[battlerAtk].status1 & (STATUS1_BURN | STATUS1_PSN_ANY | STATUS1_PARALYSIS))
+        if (gBattleMons[battlerAtk].status1 & (STATUS1_BURN | STATUS1_PSN_ANY | STATUS1_PARALYSIS | STATUS1_FRAGILE))
             MulModifier(&modifier, UQ_4_12(2.0));
         break;
     case EFFECT_BRINE:
@@ -7493,6 +7780,8 @@ static u32 CalcMoveBasePowerAfterModifiers(u16 move, u8 battlerAtk, u8 battlerDe
     if (gFieldStatuses & STATUS_FIELD_ELECTRIC_TERRAIN && moveType == TYPE_ELECTRIC && IsBattlerGrounded(battlerAtk) && !(gStatuses3[battlerAtk] & STATUS3_SEMI_INVULNERABLE))
         MulModifier(&modifier, (B_TERRAIN_TYPE_BOOST >= GEN_8) ? UQ_4_12(1.3) : UQ_4_12(1.5));
     if (gFieldStatuses & STATUS_FIELD_PSYCHIC_TERRAIN && moveType == TYPE_PSYCHIC && IsBattlerGrounded(battlerAtk) && !(gStatuses3[battlerAtk] & STATUS3_SEMI_INVULNERABLE))
+        MulModifier(&modifier, (B_TERRAIN_TYPE_BOOST >= GEN_8) ? UQ_4_12(1.3) : UQ_4_12(1.5));
+    if (gFieldStatuses & STATUS_FIELD_NORMAL_TERRAIN && moveType == TYPE_NORMAL && IsBattlerGrounded(battlerAtk) && !(gStatuses3[battlerAtk] & STATUS3_SEMI_INVULNERABLE))
         MulModifier(&modifier, (B_TERRAIN_TYPE_BOOST >= GEN_8) ? UQ_4_12(1.3) : UQ_4_12(1.5));
 
     return ApplyModifier(modifier, basePower);
@@ -7674,6 +7963,7 @@ static u32 CalcAttackStat(u16 move, u8 battlerAtk, u8 battlerDef, u8 moveType, b
 
     // The offensive stats of a Player's Pokémon are boosted by x1.1 (+10%) if they have the 1st badge and 7th badges.
     // Having the 1st badge boosts physical attack while having the 7th badge boosts special attack.
+    //TODO TIOTH新增食材烹饪（短暂持续效果）
     if (ShouldGetStatBadgeBoost(FLAG_BADGE01_GET, battlerAtk) && IS_MOVE_PHYSICAL(move))
         MulModifier(&modifier, UQ_4_12(1.1));
     if (ShouldGetStatBadgeBoost(FLAG_BADGE07_GET, battlerAtk) && IS_MOVE_SPECIAL(move))
@@ -7744,6 +8034,7 @@ static u32 CalcDefenseStat(u16 move, u8 battlerAtk, u8 battlerDef, u8 moveType, 
     // target's abilities
     switch (GetBattlerAbility(battlerDef))
     {
+    //特性增加物防
     case ABILITY_MARVEL_SCALE:
         if (gBattleMons[battlerDef].status1 & STATUS1_ANY && usesDefStat)
         {
@@ -7768,6 +8059,7 @@ static u32 CalcDefenseStat(u16 move, u8 battlerAtk, u8 battlerDef, u8 moveType, 
                 RecordAbilityBattle(battlerDef, ABILITY_GRASS_PELT);
         }
         break;
+    //特性增加特防
     case ABILITY_FLOWER_GIFT:
         if (gBattleMons[battlerDef].species == SPECIES_CHERRIM && WEATHER_HAS_EFFECT && gBattleWeather & WEATHER_SUN_ANY && !usesDefStat)
             MulModifier(&modifier, UQ_4_12(1.5));
@@ -7789,6 +8081,15 @@ static u32 CalcDefenseStat(u16 move, u8 battlerAtk, u8 battlerDef, u8 moveType, 
             break;
         }
     }
+    //陷入虫异常后,特防提升1.5,且无视虚弱状态
+    case ABILITY_SWARM_NEST:
+        if (gBattleMons[battlerDef].status1 & STATUS1_FRAGILE && !usesDefStat)
+        {
+            MulModifier(&modifier, UQ_4_12(1.5));
+            if (updateFlags)
+                RecordAbilityBattle(battlerDef, ABILITY_SWARM_NEST);
+        }
+        break;
 
     // target's hold effects
     switch (GetBattlerHoldEffect(battlerDef, TRUE))
@@ -7838,7 +8139,14 @@ static u32 CalcFinalDmg(u32 dmg, u16 move, u8 battlerAtk, u8 battlerDef, u8 move
         MulModifier(&finalModifier, UQ_4_12(0.75));
 
     // take type effectiveness
-    MulModifier(&finalModifier, typeEffectivenessModifier);
+    if (gBattleMons[targetBattler].status1 == STATUS1_FRAGILE 
+        && typeEffectivenessModifier <= UQ_4_12(0.5)
+        && typeEffectivenessModifier != UQ_4_12(0.0)
+        && abilityDef != ABILITY_SWARM_NEST)
+
+            MulModifier(&finalModifier, UQ_4_12(1.0));
+    else 
+        MulModifier(&finalModifier, typeEffectivenessModifier);
 
     // check crit
     if (isCrit)
@@ -7907,6 +8215,7 @@ static u32 CalcFinalDmg(u32 dmg, u16 move, u8 battlerAtk, u8 battlerDef, u8 move
     switch (abilityDef)
     {
     case ABILITY_MULTISCALE:
+    case ABILITY_SWARM_NEST:
     case ABILITY_SHADOW_SHIELD:
         if (BATTLER_MAX_HP(battlerDef))
             MulModifier(&finalModifier, UQ_4_12(0.5));

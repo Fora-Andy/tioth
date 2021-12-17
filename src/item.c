@@ -1,5 +1,6 @@
 #include "global.h"
 #include "item.h"
+#include "party_menu.h"
 #include "berry.h"
 #include "string_util.h"
 #include "text.h"
@@ -9,6 +10,7 @@
 #include "item_menu.h"
 #include "strings.h"
 #include "load_save.h"
+#include "pokemon_summary_screen.h"
 #include "item_use.h"
 #include "battle_pyramid.h"
 #include "battle_pyramid_bag.h"
@@ -23,6 +25,7 @@ static bool8 CheckPyramidBagHasSpace(u16 itemId, u16 count);
 
 // EWRAM variables
 EWRAM_DATA struct BagPocket gBagPockets[POCKETS_COUNT] = {0};
+EWRAM_DATA struct ItemSlot gTmHmItemSlots[BAG_TMHM_COUNT] = {0};
 
 // rodata
 #include "data/text/item_descriptions.h"
@@ -64,6 +67,22 @@ void ApplyNewEncryptionKeyToBagItems_(u32 newKey) // really GF?
     ApplyNewEncryptionKeyToBagItems(newKey);
 }
 
+void DeserializeTmHmItemSlots(void)
+{
+    int i;
+    for (i = 0; i < BAG_TMHM_COUNT; ++i)
+    {
+        gTmHmItemSlots[i].itemId = 0;
+        SetBagItemQuantity(&(gTmHmItemSlots[i].quantity), 0);
+    }
+    for (i = 0; i < TM_COUNT; ++i)
+    {
+        u8 bit = i % 8;
+        if (gSaveBlock1Ptr->bagPocket_TMHMOwnedFlags[i / 8] & (1<<bit))
+            AddBagItem(i + ITEM_TM_START, 1);
+    }
+}
+
 void SetBagItemsPointers(void)
 {
     gBagPockets[ITEMS_POCKET].itemSlots = gSaveBlock1Ptr->bagPocket_Items;
@@ -75,11 +94,23 @@ void SetBagItemsPointers(void)
     gBagPockets[BALLS_POCKET].itemSlots = gSaveBlock1Ptr->bagPocket_PokeBalls;
     gBagPockets[BALLS_POCKET].capacity = BAG_POKEBALLS_COUNT;
 
-    gBagPockets[TMHM_POCKET].itemSlots = gSaveBlock1Ptr->bagPocket_TMHM;
+    gBagPockets[TMHM_POCKET].itemSlots = &gTmHmItemSlots[0];
     gBagPockets[TMHM_POCKET].capacity = BAG_TMHM_COUNT;
 
     gBagPockets[BERRIES_POCKET].itemSlots = gSaveBlock1Ptr->bagPocket_Berries;
     gBagPockets[BERRIES_POCKET].capacity = BAG_BERRIES_COUNT;
+
+    gBagPockets[MEDICINES_POCKET].itemSlots = gSaveBlock1Ptr->bagPocket_Medicines;
+    gBagPockets[MEDICINES_POCKET].capacity = BAG_MEDICINES_COUNT;
+
+    gBagPockets[BATTLEITEMS_POCKET].itemSlots = gSaveBlock1Ptr->bagPocket_BattleItems;
+    gBagPockets[BATTLEITEMS_POCKET].capacity = BAG_BATTLEITEMS_COUNT;
+
+    gBagPockets[POWERUPS_POCKET].itemSlots = gSaveBlock1Ptr->bagPocket_PowerUps;
+    gBagPockets[POWERUPS_POCKET].capacity = BAG_POWERUPS_COUNT;
+
+    gBagPockets[COSTUMES_POCKET].itemSlots = gSaveBlock1Ptr->bagPocket_Costumes;
+    gBagPockets[COSTUMES_POCKET].capacity = BAG_COSTUMES_COUNT;
 }
 
 void CopyItemName(u16 itemId, u8 *dst)
@@ -122,7 +153,7 @@ void GetBerryCountString(u8 *dst, const u8 *berryName, u32 quantity)
 
 bool8 IsBagPocketNonEmpty(u8 pocket)
 {
-    u8 i;
+    u16 i;
 
     for (i = 0; i < gBagPockets[pocket - 1].capacity; i++)
     {
@@ -134,7 +165,7 @@ bool8 IsBagPocketNonEmpty(u8 pocket)
 
 bool8 CheckBagHasItem(u16 itemId, u16 count)
 {
-    u8 i;
+    u16 i;
     u8 pocket;
 
     if (ItemId_GetPocket(itemId) == 0)
@@ -179,10 +210,14 @@ bool8 HasAtLeastOneBerry(void)
 
 bool8 CheckBagHasSpace(u16 itemId, u16 count)
 {
-    u8 i;
+    u16 i;
     u8 pocket;
     u16 slotCapacity;
     u16 ownedCount;
+
+    #if USE_BAG_ITEM_LIMIT
+    u16 limit;
+    #endif
 
     if (ItemId_GetPocket(itemId) == POCKET_NONE)
         return FALSE;
@@ -193,10 +228,37 @@ bool8 CheckBagHasSpace(u16 itemId, u16 count)
     }
 
     pocket = ItemId_GetPocket(itemId) - 1;
-    if (pocket != BERRIES_POCKET)
-        slotCapacity = MAX_BAG_ITEM_CAPACITY;
-    else
-        slotCapacity = MAX_BERRY_CAPACITY;
+
+    #if USE_BAG_ITEM_LIMIT
+    limit = ItemId_GetLimit(itemId);
+    switch(pocket)
+    {
+        case BERRIES_POCKET:
+            slotCapacity = MAX_BERRY_CAPACITY;
+        break;
+        case TMHM_POCKET:
+            slotCapacity = 1;
+        break;
+        default:
+            slotCapacity = MAX_BAG_ITEM_CAPACITY;
+        break;
+    }
+    if (limit < slotCapacity && limit != 0)
+        slotCapacity = limit;
+    #else
+    switch(pocket)
+    {
+        case BERRIES_POCKET:
+            slotCapacity = MAX_BERRY_CAPACITY;
+        break;
+        case TMHM_POCKET:
+            slotCapacity = 1;
+        break;
+        default:
+            slotCapacity = MAX_BAG_ITEM_CAPACITY;
+        break;
+    }
+    #endif
 
     // Check space in any existing item slots that already contain this item
     for (i = 0; i < gBagPockets[pocket].capacity; i++)
@@ -216,7 +278,15 @@ bool8 CheckBagHasSpace(u16 itemId, u16 count)
 
     // Check space in empty item slots
     if (count > 0)
-    {
+    { 
+        #if USE_BAG_ITEM_LIMIT
+        if (pocket != TMHM_POCKET)
+        {
+            if (CheckBagHasItem(itemId, limit))
+                return FALSE;
+        }
+        #endif
+
         for (i = 0; i < gBagPockets[pocket].capacity; i++)
         {
             if (gBagPockets[pocket].itemSlots[i].itemId == 0)
@@ -241,9 +311,16 @@ bool8 CheckBagHasSpace(u16 itemId, u16 count)
     return TRUE;
 }
 
+static void setTmOwned(u16 itemId)
+{
+    u8* flagByte = &gSaveBlock1Ptr->bagPocket_TMHMOwnedFlags[(itemId - ITEM_TM_START) / 8];
+    *flagByte = (*flagByte) | (1 << ((itemId - ITEM_TM_START) % 8));
+}
+
 bool8 AddBagItem(u16 itemId, u16 count)
 {
-    u8 i;
+    u16 i;
+    u8 pocket = ItemId_GetPocket(itemId) - 1;
 
     if (ItemId_GetPocket(itemId) == POCKET_NONE)
         return FALSE;
@@ -260,15 +337,44 @@ bool8 AddBagItem(u16 itemId, u16 count)
         u16 slotCapacity;
         u16 ownedCount;
         u8 pocket = ItemId_GetPocket(itemId) - 1;
+        #if USE_BAG_ITEM_LIMIT
+        u8 limit = 0;
+        #endif
 
         itemPocket = &gBagPockets[pocket];
         newItems = AllocZeroed(itemPocket->capacity * sizeof(struct ItemSlot));
         memcpy(newItems, itemPocket->itemSlots, itemPocket->capacity * sizeof(struct ItemSlot));
 
-        if (pocket != BERRIES_POCKET)
-            slotCapacity = MAX_BAG_ITEM_CAPACITY;
-        else
-            slotCapacity = MAX_BERRY_CAPACITY;
+        #if USE_BAG_ITEM_LIMIT
+        limit = ItemId_GetLimit(itemId);
+        switch(pocket)
+        {
+            case BERRIES_POCKET:
+                slotCapacity = MAX_BERRY_CAPACITY;
+            break;
+            case TMHM_POCKET:
+                slotCapacity = 1;
+            break;
+            default:
+                slotCapacity = MAX_BAG_ITEM_CAPACITY;
+            break;
+        }
+        if (limit < slotCapacity && limit != 0)
+            slotCapacity = limit;
+        #else
+        switch(pocket)
+        {
+            case BERRIES_POCKET:
+                slotCapacity = MAX_BERRY_CAPACITY;
+            break;
+            case TMHM_POCKET:
+                slotCapacity = 1;
+            break;
+            default:
+                slotCapacity = MAX_BAG_ITEM_CAPACITY;
+            break;
+        }
+        #endif
 
         for (i = 0; i < itemPocket->capacity; i++)
         {
@@ -294,6 +400,10 @@ bool8 AddBagItem(u16 itemId, u16 count)
                     }
                     else
                     {
+                        #if USE_BAG_ITEM_LIMIT
+                        if (CheckBagHasItem(itemId, limit))
+                            return FALSE;
+                        #endif
                         count -= slotCapacity - ownedCount;
                         SetBagItemQuantity(&newItems[i].quantity, slotCapacity);
                         // don't create another instance of the item if it's at max slot capacity and count is equal to 0
@@ -330,6 +440,8 @@ bool8 AddBagItem(u16 itemId, u16 count)
                     {
                         // created a new slot and added quantity
                         SetBagItemQuantity(&newItems[i].quantity, count);
+                        if (pocket == TMHM_POCKET)
+                            setTmOwned(itemId);
                         count = 0;
                         break;
                     }
@@ -350,7 +462,7 @@ bool8 AddBagItem(u16 itemId, u16 count)
 
 bool8 RemoveBagItem(u16 itemId, u16 count)
 {
-    u8 i;
+    u16 i;
     u16 totalQuantity = 0;
 
     if (ItemId_GetPocket(itemId) == POCKET_NONE || itemId == ITEM_NONE)
@@ -741,10 +853,10 @@ bool8 AddPyramidBagItem(u16 itemId, u16 count)
     u8 *quantities = gSaveBlock2Ptr->frontier.pyramidBag.quantity[gSaveBlock2Ptr->frontier.lvlMode];
 
     u16 *newItems = Alloc(PYRAMID_BAG_ITEMS_COUNT * sizeof(u16));
-    u8 *newQuantities = Alloc(PYRAMID_BAG_ITEMS_COUNT * sizeof(u8));
+    u16 *newQuantities = Alloc(PYRAMID_BAG_ITEMS_COUNT * sizeof(u16));
 
     memcpy(newItems, items, PYRAMID_BAG_ITEMS_COUNT * sizeof(u16));
-    memcpy(newQuantities, quantities, PYRAMID_BAG_ITEMS_COUNT * sizeof(u8));
+    memcpy(newQuantities, quantities, PYRAMID_BAG_ITEMS_COUNT * sizeof(u16));
 
     for (i = 0; i < PYRAMID_BAG_ITEMS_COUNT; i++)
     {
@@ -902,8 +1014,16 @@ u8 ItemId_GetHoldEffectParam(u16 itemId)
     return gItems[SanitizeItemId(itemId)].holdEffectParam;
 }
 
+static u8 *Item_GetTmHmMoveDescription(u16 itemId)
+{
+    u16 move = gTMHMMoves[itemId - ITEM_TM_START];
+    return (u8*)gMoveDescriptionPointers[move - 1];
+}
+
 const u8 *ItemId_GetDescription(u16 itemId)
 {
+    if (gItems[SanitizeItemId(itemId)].pocket == POCKET_TM_HM)
+        return Item_GetTmHmMoveDescription(itemId);
     return gItems[SanitizeItemId(itemId)].description;
 }
 
@@ -969,4 +1089,9 @@ bool32 IsPinchBerryItemEffect(u16 holdEffect)
     }
 
     return FALSE;
+}
+
+u16 ItemId_GetLimit(u16 itemId)
+{
+    return gItems[SanitizeItemId(itemId)].limit;
 }

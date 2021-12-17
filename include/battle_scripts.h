@@ -301,6 +301,7 @@ extern const u8 BattleScript_PsychicSurgeActivates[];
 extern const u8 BattleScript_GrassySurgeActivates[];
 extern const u8 BattleScript_MistySurgeActivates[];
 extern const u8 BattleScript_ElectricSurgeActivates[];
+extern const u8 BattleScript_NormalSurgeActivates[]; //TIOTH一般场地
 extern const u8 BattleScript_SpectralThiefSteal[];
 extern const u8 BattleScript_StatUpMsg[];
 extern const u8 BattleScript_DefiantActivates[];
@@ -369,5 +370,7 @@ extern const u8 BattleScript_JabocaRowapBerryActivates[];
 extern const u8 BattleScript_NotAffectedAbilityPopUp[];
 extern const u8 BattleScript_BattlerShookOffTaunt[];
 extern const u8 BattleScript_BattlerGotOverItsInfatuation[];
+//TIOTH新增
+extern const u8 BattleScript_MoveEffectFragile[];
 
 #endif // GUARD_BATTLE_SCRIPTS_H

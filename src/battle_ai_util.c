@@ -72,8 +72,24 @@ static const s8 sAiAbilityRatings[ABILITIES_COUNT] =
     [ABILITY_ELECTRIC_SURGE] = 8,
     [ABILITY_EMERGENCY_EXIT] = 3,
     [ABILITY_FAIRY_AURA] = 6,
+    [ABILITY_WATER_AURA] = 6,
+    [ABILITY_STEEL_AURA] = 6,
+    [ABILITY_FIRE_AURA] = 6,
+    [ABILITY_GRASS_AURA] = 6,
+    [ABILITY_ELECTRIC_AURA] = 6,
+    [ABILITY_GHOST_AURA] = 6,
+    [ABILITY_POISON_AURA] = 6,
+    [ABILITY_GROUND_AURA] = 6,
+    [ABILITY_ROCK_AURA] = 6,
+    [ABILITY_FLYING_AURA] = 6,
+    [ABILITY_PSYCHIC_AURA] = 6,
+    [ABILITY_BUG_AURA] = 6,
+    [ABILITY_DRAGON_AURA] = 6,
+    [ABILITY_ICE_AURA] = 6,
+    [ABILITY_FIGHTING_AURA] = 6,
     [ABILITY_FILTER] = 6,
     [ABILITY_FLAME_BODY] = 4,
+    [ABILITY_WORM_BODY] = 4,
     [ABILITY_FLARE_BOOST] = 5,
     [ABILITY_FLASH_FIRE] = 6,
     [ABILITY_FLOWER_GIFT] = 4,
@@ -113,6 +129,7 @@ static const s8 sAiAbilityRatings[ABILITIES_COUNT] =
     [ABILITY_INTIMIDATE] = 7,
     [ABILITY_IRON_BARBS] = 6,
     [ABILITY_IRON_FIST] = 6,
+    [ABILITY_RIDER_KICK] = 6,
     [ABILITY_JUSTIFIED] = 4,
     [ABILITY_KEEN_EYE] = 1,
     [ABILITY_KLUTZ] = -1,
@@ -157,6 +174,7 @@ static const s8 sAiAbilityRatings[ABILITIES_COUNT] =
     [ABILITY_POISON_HEAL] = 8,
     [ABILITY_POISON_POINT] = 4,
     [ABILITY_POISON_TOUCH] = 4,
+    [ABILITY_FRAGILE_TOUCH] = 4,
     //[ABILITY_PORTAL_POWER] = 8,
     [ABILITY_POWER_CONSTRUCT] = 10,
     [ABILITY_POWER_OF_ALCHEMY] = 0,
@@ -174,6 +192,7 @@ static const s8 sAiAbilityRatings[ABILITIES_COUNT] =
     [ABILITY_RECEIVER] = 0,
     [ABILITY_RECKLESS] = 6,
     [ABILITY_REFRIGERATE] = 8,
+    [ABILITY_FIRE_SKIN] = 8,
     [ABILITY_REGENERATOR] = 8,
     [ABILITY_RIVALRY] = 1,
     [ABILITY_RKS_SYSTEM] = 8,
@@ -214,6 +233,7 @@ static const s8 sAiAbilityRatings[ABILITIES_COUNT] =
     [ABILITY_STATIC] = 4,
     [ABILITY_STEADFAST] = 2,
     [ABILITY_STEELWORKER] = 6,
+    [ABILITY_GRASSWORKER] = 6,
     [ABILITY_STENCH] = 1,
     [ABILITY_STICKY_HOLD] = 3,
     [ABILITY_STORM_DRAIN] = 7,
@@ -2611,6 +2631,7 @@ bool32 AI_CanPutToSleep(u8 battlerAtk, u8 battlerDef, u16 defAbility, u16 move, 
     return TRUE;
 }
 
+//无法中毒
 bool32 CanBePoisoned(u8 battler, u16 ability)
 {
     if (ability == ABILITY_IMMUNITY
@@ -3046,7 +3067,8 @@ bool32 PartnerMoveEffectIsTerrain(u8 battlerAtkPartner, u16 partnerMove)
     if (gChosenMoveByBattler[battlerAtkPartner] != MOVE_NONE
      && (gBattleMoves[partnerMove].effect == EFFECT_GRASSY_TERRAIN
       || gBattleMoves[partnerMove].effect == EFFECT_MISTY_TERRAIN
-      || gBattleMoves[partnerMove].effect == EFFECT_ELECTRIC_TERRAIN
+      || gBattleMoves[partnerMove].effect == EFFECT_ELECTRIC_TERRAIN 
+      || gBattleMoves[partnerMove].effect == EFFECT_NORMAL_TERRAIN //TIOTH一般场地
       || gBattleMoves[partnerMove].effect == EFFECT_PSYCHIC_TERRAIN))
         return TRUE;
 

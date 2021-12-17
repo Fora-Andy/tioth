@@ -18,6 +18,7 @@
 #include "data.h"
 #include "decompress.h"
 #include "dma3.h"
+#include "dns.h"
 #include "event_data.h"
 #include "evolution_scene.h"
 #include "graphics.h"
@@ -419,13 +420,14 @@ static void (* const sEndTurnFuncsTable[])(void) =
     [B_OUTCOME_MON_TELEPORTED] = HandleEndTurn_FinishBattle,
 };
 
-const u8 gStatusConditionString_PoisonJpn[8] = _("どく$$$$$");
-const u8 gStatusConditionString_SleepJpn[8] = _("ねむり$$$$");
-const u8 gStatusConditionString_ParalysisJpn[8] = _("まひ$$$$$");
-const u8 gStatusConditionString_BurnJpn[8] = _("やけど$$$$");
-const u8 gStatusConditionString_IceJpn[8] = _("こおり$$$$");
-const u8 gStatusConditionString_ConfusionJpn[8] = _("こんらん$$$");
-const u8 gStatusConditionString_LoveJpn[8] = _("メロメロ$$$");
+const u8 gStatusConditionString_PoisonJpn[8] = _("中毒$$$$$");
+const u8 gStatusConditionString_SleepJpn[8] = _("睡眠$$$$");
+const u8 gStatusConditionString_ParalysisJpn[8] = _("麻痹$$$$$");
+const u8 gStatusConditionString_BurnJpn[8] = _("灼伤$$$$");
+const u8 gStatusConditionString_IceJpn[8] = _("冰冻$$$$");
+const u8 gStatusConditionString_FragileJpn[8] = _("虚弱$$$$");//TIOTH虫异常
+const u8 gStatusConditionString_ConfusionJpn[8] = _("混乱$$$");
+const u8 gStatusConditionString_LoveJpn[8] = _("着迷$$$");
 
 const u8 * const gStatusConditionStringsTable[7][2] =
 {
@@ -434,6 +436,7 @@ const u8 * const gStatusConditionStringsTable[7][2] =
     {gStatusConditionString_ParalysisJpn, gText_Paralysis},
     {gStatusConditionString_BurnJpn, gText_Burn},
     {gStatusConditionString_IceJpn, gText_Ice},
+    {gStatusConditionString_FragileJpn, gText_Fragile}, //TIOTH虫异常
     {gStatusConditionString_ConfusionJpn, gText_Confusion},
     {gStatusConditionString_LoveJpn, gText_Love}
 };
@@ -1707,6 +1710,7 @@ void BattleMainCB2(void)
     RunTextPrinters();
     UpdatePaletteFade();
     RunTasks();
+    DnsApplyFilters();
 
     if (JOY_HELD(B_BUTTON) && gBattleTypeFlags & BATTLE_TYPE_RECORDED && sub_8186450())
     {
@@ -4293,7 +4297,7 @@ s8 GetMovePriority(u32 battlerId, u16 move)
     priority = gBattleMoves[move].priority;
     if (GetBattlerAbility(battlerId) == ABILITY_GALE_WINGS
         && gBattleMoves[move].type == TYPE_FLYING
-        && (B_GALE_WINGS <= GEN_6 || BATTLER_MAX_HP(battlerId)))
+        && (B_GALE_WINGS <= GEN_6 || BATTLER_GREATER_THAN_HALF_HP(battlerId)))
     {
         priority++;
     }
@@ -4975,6 +4979,12 @@ static void ReturnFromBattleToOverworld(void)
 
     m4aSongNumStop(SE_LOW_HEALTH);
     SetMainCallback2(gMain.savedCallback);
+    
+    // if you experience the follower de-syncing with the player after battle, set POST_BATTLE_FOLLOWER_FIX to TRUE in include/constants/global.h
+    #if POST_BATTLE_FOLLOWER_FIX
+        FollowMe_WarpSetEnd();
+        gObjectEvents[GetFollowerObjectId()].invisible = TRUE;
+    #endif
 }
 
 void RunBattleScriptCommands_PopCallbacksStack(void)

@@ -22,15 +22,17 @@ struct Item
     u8 battleUsage;
     ItemUseFunc battleUseFunc;
     u8 secondaryId;
+    u16 limit; //苍穹的道具上限
 };
 
 struct BagPocket
 {
     struct ItemSlot *itemSlots;
-    u8 capacity;
+    u16 capacity;
 };
 
 extern struct BagPocket gBagPockets[];
+extern struct ItemSlot gTmHmItemSlots[BAG_TMHM_COUNT];
 
 void ApplyNewEncryptionKeyToBagItems(u32 newKey);
 void ApplyNewEncryptionKeyToBagItems_(u32 newKey);
@@ -76,5 +78,7 @@ u8 ItemId_GetBattleUsage(u16 itemId);
 ItemUseFunc ItemId_GetBattleFunc(u16 itemId);
 u8 ItemId_GetSecondaryId(u16 itemId);
 bool32 IsPinchBerryItemEffect(u16 holdEffect);
+u16 ItemId_GetLimit(u16 itemId);
+void DeserializeTmHmItemSlots(void);
 
 #endif // GUARD_ITEM_H

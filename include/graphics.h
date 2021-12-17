@@ -1,10 +1,6 @@
 #ifndef GUARD_GRAPHICS_H
 #define GUARD_GRAPHICS_H
 
-// overworld
-extern const u32 gMessageBox_Gfx[];
-extern const u16 gMessageBox_Pal[];
-
 // interface pokeballs
 extern const u32 gInterfaceGfx_PokeBall[];
 extern const u32 gInterfacePal_PokeBall[];
@@ -1203,6 +1199,7 @@ extern const u32 gMonFrontPic_UrshifuRapidStrikeStyle[];
 extern const u32 gMonFrontPic_ZarudeDada[];
 extern const u32 gMonFrontPic_CalyrexIceRider[];
 extern const u32 gMonFrontPic_CalyrexShadowRider[];
+//EGG
 extern const u32 gMonFrontPic_Egg[];
 
 extern const u32 gMonBackPic_CircledQuestionMark[];
@@ -9622,5 +9619,19 @@ extern const u8 gMailTilemap_Retro[];
 
 extern const u8 gMonMarkingsMenu_Gfx[];
 extern const u16 gMonMarkingsMenu_Pal[];
+
+//---------------苍穹精灵图片定义位置--------------------
+//查伦（范例）
+extern const u32 gMonFrontPic_Tiothcharlen[]; 
+extern const u32 gMonPalette_Tiothcharlen[]; 
+extern const u32 gMonBackPic_Tiothcharlen[]; 
+extern const u32 gMonShinyPalette_Tiothcharlen[]; 
+extern const u8 gMonIcon_Tiothcharlen[]; 
+extern const u8 gMonFootprint_Tiothcharlen[]; 
+
+//XX精灵
+
+
+//----------------结束------------------
 
 #endif //GUARD_GRAPHICS_H

@@ -171,10 +171,29 @@ struct UCoords32
 
 struct Time
 {
-    /*0x00*/ s16 days;
-    /*0x02*/ s8 hours;
-    /*0x03*/ s8 minutes;
-    /*0x04*/ s8 seconds;
+    /*0x00*/ s16 cycles; //周期
+    /*0x02*/ s16 days;
+    /*0x04*/ s8 hours;
+    /*0x05*/ s8 minutes;
+    /*0x06*/ s8 seconds;
+};
+
+struct LimitedTimeEvent // 限时事件，当游戏时间达到结束时间，触发脚本
+{
+    /*0x00*/ u16 playTimeHours;
+    /*0x02*/ u8 playTimeMinutes;
+    /*0x03*/ u8 playTimeSeconds;
+    /*0x04*/ u8 playTimeVBlanks;
+    /*0x05*/ const u8* script; //事件脚本
+};
+
+struct WildHuntingQuest // 野生狩猎委托
+{   
+    /*0x00*/ u16 species;
+    /*0x02*/ u16 targetCount;
+    /*0x04*/ u16 completedCount;
+    /*0x06*/ u8 mapGroup;
+    /*0x07*/ u8 mapNum;
 };
 
 struct Pokedex
@@ -466,6 +485,31 @@ struct RankingHall2P
     u8 language;
 };
 
+// follow me
+struct FollowerMapData
+{
+    /*0x0*/ u8 id;
+    /*0x1*/ u8 number;
+    /*0x2*/ u8 group;
+}; /* size = 0x4 */
+struct Follower
+{
+    /*0x00*/ u8 inProgress:1;
+             u8 warpEnd:1;
+             u8 createSurfBlob:3;
+             u8 comeOutDoorStairs:3;
+    /*0x01*/ u8 objId;
+    /*0x02*/ u8 currentSprite;
+    /*0x03*/ u8 delayedState;
+    /*0x04*/ struct FollowerMapData map;
+    /*0x08*/ struct Coords16 log;
+    /*0x0C*/ const u8* script;
+    /*0x10*/ u16 flag;
+    /*0x12*/ u16 graphicsId;
+    /*0x14*/ u16 flags;
+    /*0x15*/ u8 locked;
+}; /* size = 0x18 */
+
 struct SaveBlock2
 {
     /*0x00*/ u8 playerName[PLAYER_NAME_LENGTH + 1];
@@ -487,17 +531,18 @@ struct SaveBlock2
     /*0x90*/ u8 filler_90[0x8];
     /*0x98*/ struct Time localTimeOffset;
     /*0xA0*/ struct Time lastBerryTreeUpdate;
-    /*0xA8*/ u32 gcnLinkFlags; // Read by Pokemon Colosseum/XD
-    /*0xAC*/ u32 encryptionKey;
-    /*0xB0*/ struct PlayersApprentice playerApprentice;
-    /*0xDC*/ struct Apprentice apprentices[APPRENTICE_COUNT];
-    /*0x1EC*/ struct BerryCrush berryCrush;
-    /*0x1FC*/ struct PokemonJumpRecords pokeJump;
-    /*0x20C*/ struct BerryPickingResults berryPick;
-    /*0x21C*/ struct RankingHall1P hallRecords1P[HALL_FACILITIES_COUNT][2][3]; // From record mixing.
-    /*0x57C*/ struct RankingHall2P hallRecords2P[2][3]; // From record mixing.
-    /*0x624*/ u16 contestLinkResults[CONTEST_CATEGORIES_COUNT][CONTESTANT_COUNT];
-    /*0x64C*/ struct BattleFrontier frontier;
+    /*0xAA*/ u32 gcnLinkFlags; // Read by Pokemon Colosseum/XD
+    /*0xAE*/ u32 encryptionKey;
+    /*0xB2*/ struct PlayersApprentice playerApprentice;
+    /*0xDE*/ struct Apprentice apprentices[APPRENTICE_COUNT];
+    /*0x1EE*/ struct BerryCrush berryCrush;
+    /*0x1FE*/ struct PokemonJumpRecords pokeJump;
+    /*0x20E*/ struct BerryPickingResults berryPick;
+    /*0x21E*/ struct RankingHall1P hallRecords1P[HALL_FACILITIES_COUNT][2][3]; // From record mixing.
+    /*0x57E*/ struct RankingHall2P hallRecords2P[2][3]; // From record mixing.
+    /*0x626*/ u16 contestLinkResults[CONTEST_CATEGORIES_COUNT][CONTESTANT_COUNT];
+    /*0x64E*/ struct BattleFrontier frontier;
+    /*0xF2E*/ struct Follower follower;
 }; // sizeof=0xF2C
 
 extern struct SaveBlock2 *gSaveBlock2Ptr;
@@ -982,8 +1027,14 @@ struct SaveBlock1
     /*0x560*/ struct ItemSlot bagPocket_Items[BAG_ITEMS_COUNT];
     /*0x5D8*/ struct ItemSlot bagPocket_KeyItems[BAG_KEYITEMS_COUNT];
     /*0x650*/ struct ItemSlot bagPocket_PokeBalls[BAG_POKEBALLS_COUNT];
-    /*0x690*/ struct ItemSlot bagPocket_TMHM[BAG_TMHM_COUNT];
+    /*0x690*/ //struct ItemSlot bagPocket_TMHM[BAG_TMHM_COUNT];
+              u8 bagPocket_TMHMOwnedFlags[36]; //allow for a total of 288 TMs/HMs
+              u8 bagPocket_TMHMPadding[220]; //do not touch the save layout, take 242 bytes of free space
     /*0x790*/ struct ItemSlot bagPocket_Berries[BAG_BERRIES_COUNT];
+              struct ItemSlot bagPocket_Medicines[BAG_MEDICINES_COUNT];
+              struct ItemSlot bagPocket_BattleItems[BAG_BATTLEITEMS_COUNT];
+              struct ItemSlot bagPocket_PowerUps[BAG_POWERUPS_COUNT];
+              struct ItemSlot bagPocket_Costumes[BAG_COSTUMES_COUNT];
     /*0x848*/ struct Pokeblock pokeblocks[POKEBLOCKS_COUNT];
     /*0x988*/ u8 filler1[0x34]; // Previously Dex Flags, feel free to remove.
     /*0x9BC*/ u16 berryBlenderRecords[3];
@@ -1048,6 +1099,8 @@ struct SaveBlock1
     /*0x3???*/ u8 registeredTexts[UNION_ROOM_KB_ROW_COUNT][21];
     /*0x3???*/ struct SaveTrainerHill trainerHill;
     /*0x3???*/ struct WaldaPhrase waldaPhrase;
+    /*0x3???*/ struct LimitedTimeEvent limitedTimeEvent[LIMITED_TIME_EVENT_COUNT];
+    /*0x3???*/ struct WildHuntingQuest wildHutingQuest;
     // sizeof: 0x3???
 };
 

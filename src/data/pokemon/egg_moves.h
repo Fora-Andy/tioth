@@ -882,6 +882,9 @@ const u16 gEggMoves[] = {
         MOVE_FLAME_BURST),
 
     egg_moves(TOTODILE,
+        MOVE_MAT_BLOCK,
+        MOVE_QUICK_GUARD,
+        MOVE_LIFE_DEW,
         MOVE_CRUNCH,
         MOVE_THRASH,
         MOVE_HYDRO_PUMP,
@@ -4404,11 +4407,17 @@ const u16 gEggMoves[] = {
         MOVE_PAIN_SPLIT,
         MOVE_REFLECT_TYPE),
 
-    egg_moves(INDEEDEE_FEMALE,
+    
+    //-------------苍穹精灵蛋招式表---------
+    //爱管女（范例，因为查伦没有蛋招）
+        egg_moves(INDEEDEE_FEMALE,
         MOVE_PSYCH_UP,
         MOVE_FAKE_OUT,
         MOVE_PSYCHO_SHIFT,
         MOVE_HEAL_PULSE),
+    //XX精灵
+
+    //----------------结束----------------
 
     EGG_MOVES_TERMINATOR
 };

@@ -1701,7 +1701,7 @@ static s16 AI_CheckBadMove(u8 battlerAtk, u8 battlerDef, u16 move, s16 score)
         case EFFECT_LASER_FOCUS:
             if (gStatuses3[battlerAtk] & STATUS3_LASER_FOCUS)
                 score -= 10;
-            else if (AI_DATA->defAbility == ABILITY_SHELL_ARMOR || AI_DATA->defAbility == ABILITY_BATTLE_ARMOR)
+            else if (AI_DATA->defAbility == ABILITY_BATTLE_ARMOR)
                 score -= 8;
             break;
         case EFFECT_SKETCH:
@@ -2062,6 +2062,10 @@ static s16 AI_CheckBadMove(u8 battlerAtk, u8 battlerDef, u16 move, s16 score)
             break;
         case EFFECT_GRASSY_TERRAIN:
             if (PartnerMoveEffectIsTerrain(AI_DATA->battlerAtkPartner, AI_DATA->partnerMove) || gFieldStatuses & STATUS_FIELD_GRASSY_TERRAIN)
+                score -= 10;
+            break;
+        case EFFECT_NORMAL_TERRAIN: //TIOTH一般场地
+            if (PartnerMoveEffectIsTerrain(AI_DATA->battlerAtkPartner, AI_DATA->partnerMove) || gFieldStatuses & STATUS_FIELD_NORMAL_TERRAIN)
                 score -= 10;
             break;
         case EFFECT_ELECTRIC_TERRAIN:
@@ -4484,7 +4488,7 @@ static s16 AI_CheckViability(u8 battlerAtk, u8 battlerDef, u16 move, s16 score)
             score += 2;
         break;
     case EFFECT_FACADE:
-        if (gBattleMons[battlerAtk].status1 & (STATUS1_POISON | STATUS1_BURN | STATUS1_PARALYSIS | STATUS1_TOXIC_POISON))
+        if (gBattleMons[battlerAtk].status1 & (STATUS1_POISON | STATUS1_BURN | STATUS1_PARALYSIS | STATUS1_TOXIC_POISON | STATUS1_FRAGILE))
             score++;
         break;
     case EFFECT_FOCUS_PUNCH:
@@ -4617,6 +4621,7 @@ static s16 AI_SetupFirstTurn(u8 battlerAtk, u8 battlerDef, u16 move, s16 score)
     case EFFECT_PSYCHIC_TERRAIN:
     case EFFECT_GRASSY_TERRAIN:
     case EFFECT_ELECTRIC_TERRAIN:
+    case EFFECT_NORMAL_TERRAIN: //TIOTH 一般场地
     case EFFECT_MISTY_TERRAIN:
     case EFFECT_STEALTH_ROCK:
     case EFFECT_TOXIC_SPIKES:

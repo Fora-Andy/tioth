@@ -4,7 +4,7 @@
 #define VARS_START 0x4000
 
 // temporary vars
-// The first 0x10 vars are are temporary--they are cleared every time a map is loaded.
+//这些VAR会在每次加载地图的时候归零{
 #define TEMP_VARS_START            0x4000
 #define VAR_TEMP_0                 (TEMP_VARS_START + 0x0)
 #define VAR_TEMP_1                 (TEMP_VARS_START + 0x1)
@@ -23,6 +23,7 @@
 #define VAR_TEMP_E                 (TEMP_VARS_START + 0xE)
 #define VAR_TEMP_F                 (TEMP_VARS_START + 0xF)
 #define TEMP_VARS_END              VAR_TEMP_F
+//}//到这些为止
 
 // object gfx id vars
 // These 0x10 vars are used to dynamically control a map object's sprite.
@@ -263,11 +264,11 @@
 #define VAR_ROXANNE_CALL_STEP_COUNTER        0x40F4
 #define VAR_SCOTT_BF_CALL_STEP_COUNTER       0x40F5
 #define VAR_RIVAL_RAYQUAZA_CALL_STEP_COUNTER 0x40F6
-#define VAR_UNUSED_0x40F7                    0x40F7 // Unused Var
-#define VAR_UNUSED_0x40F8                    0x40F8 // Unused Var
-#define VAR_UNUSED_0x40F9                    0x40F9 // Unused Var
-#define VAR_UNUSED_0x40FA                    0x40FA // Unused Var
-#define VAR_UNUSED_0x40FB                    0x40FB // Unused Var
+#define VAR_CYCLES                           0x40F7 // 上个周期记录，用于每日时间事件
+#define VAR_DIALOG_STYLE                     0x40F8 // 对话框样式
+#define VAR_DIALOG_ARROW_TYPE                0x40F9 // 对话框指向，0=正常，1=向左箭头，2=向左泡泡，3=向右箭头，4=向右泡泡 
+#define VAR_TIOTH_MAP                    0x40FA // Unused Var
+#define VAR_UNUSED_0x40FB                   0x40FB // Unused Var
 #define VAR_UNUSED_0x40FC                    0x40FC // Unused Var
 #define VAR_UNUSED_0x40FD                    0x40FD // Unused Var
 #define VAR_UNUSED_0x40FE                    0x40FE // Unused Var
@@ -301,6 +302,11 @@
 #define VAR_MON_BOX_POS               0x8013
 #define VAR_UNUSED_0x8014             0x8014
 #define VAR_TRAINER_BATTLE_OPPONENT_A 0x8015 // Alias of gTrainerBattleOpponent_A
+
+#define VAR_T_SLOT                      0x8000
+#define VAR_T_DAYS                      0x8001
+#define VAR_T_HOURS                     0x8002
+#define VAR_T_MINUTES                   0x8003
 
 #define SPECIAL_VARS_END              0x8015
 
